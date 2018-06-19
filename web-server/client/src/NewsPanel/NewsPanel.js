@@ -1,43 +1,49 @@
 import './NewsPanel.css';
+import _ from 'lodash';
+
 import React from 'react';
-import NewsCard from '../NewsCard/NewsCard';
+
+import NewsCard from '../NewsCard/NewsCard'
 
 class NewsPanel extends React.Component{
-    constructor(){
+    constructor() {
         super();
-        this.state = {
-            new: null
-        };
+        this.state = {news:null};
+        this.handleScroll = this.handleScroll.bind(this);
     }
-    componentDidMount(){
-        this.loadMoreNews();
-    }
-    loadMoreNews(e){
-        this.setState({
-            news: [{'url':'http://us.cnn.com/2017/02/15/politics/andrew-puzder-failed-nomination/index.html',
-                'title':"Inside Andrew Puzder's failed nomination",
-                'description':"In the end, Andrew Puzder had too much baggage -- both personal and professional -- to be confirmed as President Donald Trump's Cabinet.",
-                'source':'cnn',
-                'urlToImage':'http://i2.cdn.cnn.com/cnnnext/dam/assets/170215162504-puzder-trump-file-super-tease.jpg',
-                'digest':"3RjuEomJo26O1syZbU7OHA==\n",
-                'reason':"Recommend"
-            },
-                {'title': 'Zero Motorcycles CTO Abe Askenazi on the future of two-wheeled EVs',
-                    'description': "Electric cars and buses have already begun to take over the world, but the motorcycle industry has been much slower to put out all-electric and hybrid models...",
-                    'url': "https://techcrunch.com/2017/03/23/zero-motorcycles-cto-abe-askenazi-on-the-future-of-two-wheeled-evs/",
-                    'urlToImage': "https://tctechcrunch2011.files.wordpress.com/2017/03/screen-shot-2017-03-23-at-14-04-01.png?w=764&h=400&crop=1",
-                    'source': 'techcrunch',
-                    'digest':"3RjuEomJo26O1syZbUdOHA==\n",
-                    'time':"Today",
-                    'reason':"Hot"
-                }]
-        });
 
+    componentDidMount() {
+        this.loadMoreNews();
+        this.loadMoreNews = _.debounce(this.loadMoreNews, 1000);
+        window.addEventListener('scroll', this.handleScroll);
     }
-    renderNews(){
-        var news_list = this.state.news.map(function (news) {
+
+    handleScroll() {
+        let scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+        if ((window.innerHeight + scrollY) >= (document.body.offsetHeight - 50)) {
+            console.log('Loading more news');
+            this.loadMoreNews();
+        }
+    }
+
+    loadMoreNews() {
+        let request = new Request('http://localhost:3000/news', {
+            method: 'GET',
+            cache: 'no-cache'});
+
+        fetch(request)
+            .then((res) => res.json())
+            .then((news) => {
+                this.setState({
+                    news: this.state.news? this.state.news.concat(news) : news,
+                });
+            });
+    }
+
+    renderNews() {
+        let news_list = this.state.news.map(function(news) {
             return(
-                <a className='lis-group-item' key={news.digest} href="#">
+                <a className='list-group-item' href=" ">
                     <NewsCard news={news} />
                 </a>
             );
@@ -45,23 +51,24 @@ class NewsPanel extends React.Component{
 
         return(
             <div className="container-fluid">
-                <div className="list-group">
+                <div className='list-group'>
                     {news_list}
                 </div>
             </div>
         );
     }
-    render(){
-        if(this.state.news){
+
+    render() {
+        if (this.state.news) {
             return(
                 <div>
-                    '{this.renderNews()}'
+                    {this.renderNews()}
                 </div>
             );
         } else {
             return(
                 <div>
-                    <div id="msg-app-loading">
+                    <div id='msg-app-loading'>
                         Loading
                     </div>
                 </div>

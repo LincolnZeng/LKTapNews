@@ -38,7 +38,7 @@ while True:
         # format: YYYY-MM_DDTHH:MM:SS in UTC
             news['publishedAt'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
-        redis_client.set(news_digest, None)
+        redis_client.set(news_digest, news)
         redis_client.expire(news_digest, NEWS_TIME_OUT_IN_SECONDS)
 
         cloudAMQP_client.sendMessage(news)

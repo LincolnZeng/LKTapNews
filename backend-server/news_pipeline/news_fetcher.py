@@ -33,7 +33,7 @@ def handle_message(msg):
     #task['text'] = text
     #dedupe_news_queue_client.sendMessage(task)
 
-    if task['source'] == 'cnn':
+    if task['source'] == 'CNN':
             print 'Scraping CNN news'
             text = cnn_news_scraper.extract_news(task['url'])
     else:
